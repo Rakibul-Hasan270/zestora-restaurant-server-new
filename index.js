@@ -25,9 +25,22 @@ async function run() {
         await client.connect();
 
         const menuCollection = client.db("zestora_restaurant_new").collection('menu');
+        const reviewCollection = client.db("zestora_restaurant_new").collection('review');
+        const reservationCollection = client.db("zestora_restaurant_new").collection('reservation');
 
         app.get('/menu', async (req, res) => {
             const result = await menuCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get('/review', async (req, res) => {
+            const result = await reviewCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post('/reservation-info', async (req, res) => {
+            const userInfo = req.body;
+            const result = await reservationCollection.insertOne(userInfo);
             res.send(result);
         })
 
