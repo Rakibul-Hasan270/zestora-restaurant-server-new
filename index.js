@@ -55,6 +55,18 @@ async function run() {
             })
         }
 
+        // verify admion 
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const isAdmin = user?.role === 'admin';
+            if (!isAdmin) {
+                return res.status(403).send({ message: 'forbiden access' });
+            }
+            next();
+        }
+
 
         // user related apis ------------------------------
         app.post('/users', async (req, res) => {
@@ -68,19 +80,19 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/users', async (req, res) => {
+        app.get('/users', verifyToken, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
 
-        app.delete('/users/:id', async (req, res) => {
+        app.delete('/users/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await userCollection.deleteOne(filter);
             res.send(result);
         })
 
-        app.patch('/users/:id', async (req, res) => {
+        app.patch('/users/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updatedDoc = {
@@ -106,20 +118,20 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/menu', async (req, res) => {
+        app.post('/menu', verifyToken, async (req, res) => {
             const menuInfo = req.body;
             const result = await menuCollection.insertOne(menuInfo);
             res.send(result);
         })
 
-        app.delete('/menu/:id', async (req, res) => {
+        app.delete('/menu/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await menuCollection.deleteOne(filter);
             res.send(result);
         })
 
-        app.patch('/menu/:id', async (req, res) => {
+        app.patch('/menu/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const item = req.body;
             const filter = { _id: new ObjectId(id) };
@@ -139,25 +151,25 @@ async function run() {
 
 
         // cart related apis ---------------------------------
-        app.post('/cart', async (req, res) => {
+        app.post('/cart', verifyToken, async (req, res) => {
             const item = req.body;
             const result = await cartCollection.insertOne(item);
             res.send(result);
         })
 
-        app.get('/cart', async (req, res) => {
+        app.get('/cart', verifyToken, async (req, res) => {
             const result = await cartCollection.find().toArray();
             res.send(result);
         })
 
-        app.get('/cart/:email', async (req, res) => {
+        app.get('/cart/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { email: email }
             const result = await cartCollection.find(query).toArray();
             res.send(result);
         })
 
-        app.delete('/cart/:id', async (req, res) => {
+        app.delete('/cart/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await cartCollection.deleteOne(query);
