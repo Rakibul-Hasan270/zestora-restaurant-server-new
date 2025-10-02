@@ -69,6 +69,32 @@ async function run() {
 
 
         // user related apis ------------------------------
+        app.get('/users/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            if (email !== req.decoded.email) {
+                res.status(403).send({ message: 'forbiden access' });
+            }
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            let admin = false;
+            if (user) {
+                admin = user?.role === 'admin';
+            }
+            res.send({ admin });
+        })
+
+        app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body;
             const filter = { email: user.email };
@@ -80,27 +106,15 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/users', verifyToken, async (req, res) => {
+        app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
 
-        app.delete('/users/:id', verifyToken, async (req, res) => {
+        app.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await userCollection.deleteOne(filter);
-            res.send(result);
-        })
-
-        app.patch('/users/:id', verifyToken, async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: new ObjectId(id) };
-            const updatedDoc = {
-                $set: {
-                    role: 'admin'
-                }
-            }
-            const result = await userCollection.updateOne(filter, updatedDoc);
             res.send(result);
         })
 
@@ -118,20 +132,20 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/menu', verifyToken, async (req, res) => {
+        app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
             const menuInfo = req.body;
             const result = await menuCollection.insertOne(menuInfo);
             res.send(result);
         })
 
-        app.delete('/menu/:id', verifyToken, async (req, res) => {
+        app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await menuCollection.deleteOne(filter);
             res.send(result);
         })
 
-        app.patch('/menu/:id', verifyToken, async (req, res) => {
+        app.patch('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const item = req.body;
             const filter = { _id: new ObjectId(id) };
@@ -185,20 +199,20 @@ async function run() {
 
 
         // reservation related apis -----------------------------
-        app.post('/reservation', async (req, res) => {
+        app.post('/reservation', verifyToken, async (req, res) => {
             const userInfo = req.body;
             const result = await reservationCollection.insertOne(userInfo);
             res.send(result);
         })
 
-        app.delete('/reservation/:id', async (req, res) => {
+        app.delete('/reservation/:id', verifyToken, async (req, res) => {
             const reservId = req.params.id;
             const filter = { _id: new ObjectId(reservId) };
             const result = await reservationCollection.deleteOne(filter);
             res.send(result);
         })
 
-        app.patch('/reservation/:id', async (req, res) => {
+        app.patch('/reservation/:id', verifyToken, verifyAdmin, async (req, res) => {
             const reservId = req.params.id;
             const filter = { _id: new ObjectId(reservId) };
             const updatedDoc = {
@@ -210,7 +224,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/reservation', async (req, res) => {
+        app.get('/reservation', verifyToken, async (req, res) => {
             const result = await reservationCollection.find().toArray();
             res.send(result);
         })
