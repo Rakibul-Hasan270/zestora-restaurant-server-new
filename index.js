@@ -69,7 +69,7 @@ async function run() {
 
 
         // user related apis ------------------------------
-        app.get('/users/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
+        app.get('/users/admin/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             if (email !== req.decoded.email) {
                 res.status(403).send({ message: 'forbiden access' });
@@ -106,7 +106,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
+        app.get('/users', verifyToken, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
