@@ -199,7 +199,7 @@ async function run() {
 
 
         // reservation related apis -----------------------------
-        app.post('/reservation', verifyToken, async (req, res) => {
+        app.post('/reservation' , async (req, res) => {
             const userInfo = req.body;
             const result = await reservationCollection.insertOne(userInfo);
             res.send(result);
@@ -226,6 +226,13 @@ async function run() {
 
         app.get('/reservation', verifyToken, async (req, res) => {
             const result = await reservationCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get('/reservation/:email', verifyToken,async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await reservationCollection.find(query).toArray();
             res.send(result);
         })
 
